@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Video Downloader</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Downloader</h1>
+        <form id="download-form" method="POST" action="/download">
+            <label for="video_url">Video URL:</label>
+            <input type="text" id="video_url" name="video_url" required>
+            
+            <label for="save_path">Save Path:</label>
+            <input type="text" id="save_path" name="save_path" readonly>
+            <button type="button" id="browse-button">Browse</button>
+            
+            <button type="submit" id="download-button">Download</button>
+        </form>
+        <p id="download-status"></p>
+    </div>
+
+    <script>
+        document.getElementById('browse-button').addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'video/*';
+            fileInput.onchange = function() {
+                document.getElementById('save_path').value = fileInput.files[0].name;
+            };
+            fileInput.click();
+        });
+        
+        document.getElementById('download-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const xhr = new XMLHttpRequest();
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        document.getElementById('download-status').textContent = JSON.parse(xhr.responseText).message;
+                    } else {
+                        document.getElementById('download-status').textContent = 'Error: ' + JSON.parse(xhr.responseText).message;
+                    }
+                }
+            };
+            
+            xhr.open('POST', '/download', true);
+            xhr.send(formData);
+        });
+    </script>
+</body>
+                </html>
